@@ -132,49 +132,61 @@
             const progressBar = document.getElementById('progressBar');
             const statusDisplay = document.getElementById('status');
             
-            // Configuration
-            const config = {
-                testDuration: 4000, // 4 seconds per test
-                pingTestUrl: 'https://www.google.com/generate_204',
-                downloadTestUrl: 'https://speedtest.ftp.otenet.gr/files/test100Mb.db',
-                uploadTestUrl: 'https://httpbin.org/post'
+            // Simple event listener that definitely works
+            startTestBtn.onclick = function() {
+                startTest();
             };
             
-            // This is the fixed event listener
-            startTestBtn.addEventListener('click', startTest);
-            
             async function startTest() {
+                // Immediately show the test is starting
                 startTestBtn.disabled = true;
-                resetUI();
+                statusDisplay.textContent = "Starting test...";
+                
+                // Reset all displays
+                pingDisplay.textContent = "—";
+                downloadDisplay.textContent = "—";
+                uploadDisplay.textContent = "—";
+                progressBar.style.width = "0%";
                 
                 try {
-                    // 1. Ping Test
+                    // 1. Ping Test (simple version)
                     statusDisplay.textContent = "Measuring ping...";
-                    const ping = await measurePing(config.pingTestUrl);
+                    const pingStart = performance.now();
+                    await fetch('https://www.google.com/generate_204', {
+                        method: 'GET',
+                        cache: 'no-store',
+                        mode: 'no-cors'
+                    });
+                    const pingEnd = performance.now();
+                    const ping = Math.round(pingEnd - pingStart);
                     pingDisplay.textContent = ping;
-                    updateProgress(15);
+                    progressBar.style.width = "20%";
                     
-                    // 2. Download Test
+                    // 2. Download Test (simple version)
                     statusDisplay.textContent = "Testing download speed...";
-                    progressBar.style.background = "#4285f4";
-                    const downloadSpeed = await measureTransferSpeed(
-                        'download', 
-                        config.downloadTestUrl, 
-                        config.testDuration
-                    );
+                    const downloadStart = performance.now();
+                    await fetch('https://speedtest.ftp.otenet.gr/files/test10Mb.db', {
+                        cache: 'no-store'
+                    });
+                    const downloadEnd = performance.now();
+                    const downloadTime = (downloadEnd - downloadStart) / 1000; // seconds
+                    const downloadSpeed = (10 * 8) / downloadTime; // 10MB file, convert to Mbps
                     downloadDisplay.textContent = downloadSpeed.toFixed(1);
-                    updateProgress(60);
+                    progressBar.style.width = "60%";
                     
-                    // 3. Upload Test
+                    // 3. Upload Test (simple version)
                     statusDisplay.textContent = "Testing upload speed...";
-                    progressBar.style.background = "#34a853";
-                    const uploadSpeed = await measureTransferSpeed(
-                        'upload', 
-                        config.uploadTestUrl, 
-                        config.testDuration
-                    );
+                    const uploadData = new Blob([new ArrayBuffer(2 * 1024 * 1024)]); // 2MB
+                    const uploadStart = performance.now();
+                    await fetch('https://httpbin.org/post', {
+                        method: 'POST',
+                        body: uploadData
+                    });
+                    const uploadEnd = performance.now();
+                    const uploadTime = (uploadEnd - uploadStart) / 1000; // seconds
+                    const uploadSpeed = (2 * 8) / uploadTime; // 2MB file, convert to Mbps
                     uploadDisplay.textContent = uploadSpeed.toFixed(1);
-                    updateProgress(100);
+                    progressBar.style.width = "100%";
                     
                     statusDisplay.textContent = "Test completed successfully!";
                     
@@ -184,85 +196,6 @@
                 } finally {
                     startTestBtn.disabled = false;
                 }
-            }
-            
-            function resetUI() {
-                pingDisplay.textContent = "—";
-                downloadDisplay.textContent = "—";
-                uploadDisplay.textContent = "—";
-                progressBar.style.width = "0%";
-                statusDisplay.textContent = "Starting test...";
-            }
-            
-            function updateProgress(percent) {
-                progressBar.style.width = percent + "%";
-            }
-            
-            async function measurePing(url) {
-                const start = performance.now();
-                try {
-                    await fetch(url, {
-                        method: 'GET',
-                        cache: 'no-store',
-                        mode: 'no-cors'
-                    });
-                } catch (e) {
-                    // We still get timing even if request fails
-                }
-                const end = performance.now();
-                return Math.round(end - start);
-            }
-            
-            async function measureTransferSpeed(type, url, duration) {
-                const startTime = performance.now();
-                let endTime = startTime + duration;
-                let bytesTransferred = 0;
-                
-                if (type === 'download') {
-                    try {
-                        const response = await fetch(url, {
-                            cache: 'no-store',
-                            headers: {
-                                'Cache-Control': 'no-cache',
-                                'Pragma': 'no-cache'
-                            }
-                        });
-                        
-                        const reader = response.body.getReader();
-                        
-                        while (performance.now() < endTime) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-                            bytesTransferred += value.length;
-                        }
-                        
-                        reader.cancel();
-                    } catch (e) {
-                        throw new Error("Download test failed");
-                    }
-                } else { // upload
-                    const chunkSize = 1 * 1024 * 1024; // 1MB chunks
-                    const testData = new Uint8Array(chunkSize);
-                    
-                    try {
-                        while (performance.now() < endTime) {
-                            await fetch(url, {
-                                method: 'POST',
-                                body: testData,
-                                headers: {
-                                    'Content-Type': 'application/octet-stream'
-                                }
-                            });
-                            bytesTransferred += chunkSize;
-                        }
-                    } catch (e) {
-                        throw new Error("Upload test failed");
-                    }
-                }
-                
-                const actualDuration = (Math.min(performance.now(), endTime) - startTime;
-                const bitsTransferred = bytesTransferred * 8;
-                return (bitsTransferred / actualDuration) / 1000000; // Convert to Mbps
             }
         });
     </script>
