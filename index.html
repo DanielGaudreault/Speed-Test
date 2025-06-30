@@ -3,183 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accurate Speed Test</title>
+    <title>Advanced Speed Test</title>
     <style>
+        :root {
+            --primary: #4285f4;
+            --secondary: #34a853;
+            --danger: #ea4335;
+            --light: #f8f9fa;
+            --dark: #202124;
+            --gray: #5f6368;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
             background: #f5f5f5;
-        }
-        .test-container {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        button {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 15px 0;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #3367d6;
-        }
-        button:disabled {
-            background: #9e9e9e;
-            cursor: not-allowed;
-        }
-        .results {
+            color: var(--dark);
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
-            margin: 25px 0;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
         }
-        .result-box {
-            background: #f8f9fa;
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        button {
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            padding: 15px;
-            width: 30%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .result-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #202124;
-            margin: 5px 0;
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
         }
-        .result-label {
-            color: #5f6368;
-            font-size: 14px;
+        
+        .btn-primary:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
         }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #d33426;
+        }
+        
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .status {
+            text-align: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            background: var(--light);
+            font-weight: 500;
+        }
+        
         .progress-container {
-            height: 6px;
+            height: 8px;
             background: #e0e0e0;
-            border-radius: 3px;
-            margin: 20px 0;
+            border-radius: 4px;
+            margin: 2rem 0;
             overflow: hidden;
         }
+        
         .progress-bar {
             height: 100%;
-            background: #4285f4;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.3s ease;
         }
-        .status {
-            color: #5f6368;
-            margin: 15px 0;
-            min-height: 20px;
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
         }
-        @media (max-width: 500px) {
+        
+        .result-card {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            color: var(--dark);
+        }
+        
+        .result-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .history {
+            margin-top: 2rem;
+        }
+        
+        .history h2 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .history-list {
+            list-style: none;
+        }
+        
+        .history-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-time {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
             .results {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
                 flex-direction: column;
                 align-items: center;
-            }
-            .result-box {
-                width: 80%;
-                margin-bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="test-container">
+    <div class="container">
         <h1>Internet Speed Test</h1>
-        <button id="startTest">Start Test</button>
         
-        <div class="status" id="status">Ready to begin test</div>
+        <div class="controls">
+            <button id="startTest" class="btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 3l14 9-14 9V3z"></path>
+                </svg>
+                Start Test
+            </button>
+            <button id="stopTest" class="btn-danger" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="6" y="6" width="12" height="12"></rect>
+                </svg>
+                Stop Test
+            </button>
+        </div>
+        
+        <div class="status" id="status">Ready to start speed test</div>
         
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
         
         <div class="results">
-            <div class="result-box">
-                <div class="result-label">Ping</div>
+            <div class="result-card">
+                <div class="result-label">Ping (Latency)</div>
                 <div class="result-value" id="ping">—</div>
-                <div class="result-label">ms</div>
+                <div class="result-label">milliseconds</div>
             </div>
-            <div class="result-box">
-                <div class="result-label">Download</div>
+            <div class="result-card">
+                <div class="result-label">Download Speed</div>
                 <div class="result-value" id="download">—</div>
                 <div class="result-label">Mbps</div>
             </div>
-            <div class="result-box">
-                <div class="result-label">Upload</div>
+            <div class="result-card">
+                <div class="result-label">Upload Speed</div>
                 <div class="result-value" id="upload">—</div>
                 <div class="result-label">Mbps</div>
             </div>
         </div>
     </div>
+    
+    <div class="container history">
+        <h2>Test History</h2>
+        <ul class="history-list" id="historyList">
+            <!-- History items will be added here -->
+        </ul>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
             const startTestBtn = document.getElementById('startTest');
+            const stopTestBtn = document.getElementById('stopTest');
             const pingDisplay = document.getElementById('ping');
             const downloadDisplay = document.getElementById('download');
             const uploadDisplay = document.getElementById('upload');
             const progressBar = document.getElementById('progressBar');
             const statusDisplay = document.getElementById('status');
+            const historyList = document.getElementById('historyList');
+            
+            // Test state
+            let testInProgress = false;
+            let abortController = null;
+            let currentTestPhase = null;
             
             // Configuration
             const config = {
-                testDuration: 4000, // 4 seconds per test
+                testDuration: 5000, // 5 seconds per test
                 pingTestUrl: 'https://www.google.com/generate_204',
                 downloadTestUrl: 'https://speedtest.ftp.otenet.gr/files/test100Mb.db',
-                uploadTestUrl: 'https://httpbin.org/post'
+                uploadTestUrl: 'https://httpbin.org/post',
+                pingSamples: 5 // Number of ping measurements to take
             };
             
-            startTestBtn.addEventListener('click', async function() {
+            // Event Listeners
+            startTestBtn.addEventListener('click', startTest);
+            stopTestBtn.addEventListener('click', stopTest);
+            
+            // Load test history
+            loadHistory();
+            
+            // Main test function
+            async function startTest() {
+                if (testInProgress) return;
+                
+                testInProgress = true;
+                abortController = new AbortController();
                 startTestBtn.disabled = true;
+                stopTestBtn.disabled = false;
                 resetUI();
                 
                 try {
                     // 1. Ping Test
-                    statusDisplay.textContent = "Measuring ping...";
-                    const ping = await measurePing(config.pingTestUrl);
+                    currentTestPhase = 'ping';
+                    statusDisplay.textContent = "Measuring ping/latency...";
+                    const ping = await measurePing();
                     pingDisplay.textContent = ping;
                     updateProgress(15);
                     
                     // 2. Download Test
+                    currentTestPhase = 'download';
                     statusDisplay.textContent = "Testing download speed...";
-                    const downloadSpeed = await measureTransferSpeed(
-                        'download', 
-                        config.downloadTestUrl, 
-                        config.testDuration
-                    );
+                    progressBar.style.background = "linear-gradient(90deg, var(--primary), var(--secondary))";
+                    const downloadSpeed = await measureSpeed('download');
                     downloadDisplay.textContent = downloadSpeed.toFixed(1);
                     updateProgress(60);
                     
                     // 3. Upload Test
+                    currentTestPhase = 'upload';
                     statusDisplay.textContent = "Testing upload speed...";
-                    const uploadSpeed = await measureTransferSpeed(
-                        'upload', 
-                        config.uploadTestUrl, 
-                        config.testDuration
-                    );
+                    progressBar.style.background = "linear-gradient(90deg, var(--secondary), #fbbc05))";
+                    const uploadSpeed = await measureSpeed('upload');
                     uploadDisplay.textContent = uploadSpeed.toFixed(1);
                     updateProgress(100);
                     
+                    // Test completed successfully
                     statusDisplay.textContent = "Test completed successfully!";
+                    saveTestResult(ping, downloadSpeed, uploadSpeed);
                     
                 } catch (error) {
-                    console.error("Test failed:", error);
-                    statusDisplay.textContent = "Test failed. Please try again.";
+                    if (error.name !== 'AbortError') {
+                        console.error("Test error:", error);
+                        statusDisplay.textContent = `Test failed during ${currentTestPhase}: ${error.message}`;
+                    } else {
+                        statusDisplay.textContent = "Test stopped by user";
+                    }
                 } finally {
+                    testInProgress = false;
+                    abortController = null;
+                    currentTestPhase = null;
                     startTestBtn.disabled = false;
+                    stopTestBtn.disabled = true;
                 }
-            });
+            }
+            
+            function stopTest() {
+                if (abortController) {
+                    abortController.abort();
+                    statusDisplay.textContent = "Stopping test...";
+                    stopTestBtn.disabled = true;
+                }
+            }
             
             function resetUI() {
                 pingDisplay.textContent = "—";
@@ -193,48 +341,64 @@
                 progressBar.style.width = percent + "%";
             }
             
-            async function measurePing(url) {
-                const times = [];
+            async function measurePing() {
+                const pingTimes = [];
+                const { signal } = abortController;
                 
-                // Take 3 measurements and use the median
-                for (let i = 0; i < 3; i++) {
+                for (let i = 0; i < config.pingSamples; i++) {
+                    if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+                    
                     try {
                         const start = performance.now();
-                        await fetch(url, {
+                        await fetch(config.pingTestUrl, {
                             method: 'GET',
                             cache: 'no-store',
-                            mode: 'no-cors'
+                            mode: 'no-cors',
+                            signal
                         });
                         const end = performance.now();
-                        times.push(Math.round(end - start));
+                        pingTimes.push(Math.round(end - start));
                     } catch (e) {
-                        times.push(999); // Fallback high value if ping fails
+                        if (e.name !== 'AbortError') {
+                            pingTimes.push(999); // High value if ping fails
+                        } else {
+                            throw e;
+                        }
                     }
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    // Small delay between pings
+                    if (i < config.pingSamples - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
                 }
                 
-                // Return median value
-                times.sort((a, b) => a - b);
-                return times[1];
+                // Calculate median ping
+                pingTimes.sort((a, b) => a - b);
+                return pingTimes[Math.floor(config.pingSamples / 2)];
             }
             
-            async function measureTransferSpeed(type, url, duration) {
+            async function measureSpeed(type) {
+                const { signal } = abortController;
                 const startTime = performance.now();
-                let endTime = startTime + duration;
+                let endTime = startTime + config.testDuration;
                 let bytesTransferred = 0;
                 
                 if (type === 'download') {
                     try {
-                        const response = await fetch(url, {
+                        const response = await fetch(config.downloadTestUrl, {
                             cache: 'no-store',
                             headers: {
                                 'Cache-Control': 'no-cache',
                                 'Pragma': 'no-cache'
-                            }
+                            },
+                            signal
                         });
+                        
                         const reader = response.body.getReader();
                         
                         while (performance.now() < endTime) {
+                            if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+                            
                             const { done, value } = await reader.read();
                             if (done) break;
                             bytesTransferred += value.length;
@@ -242,7 +406,11 @@
                         
                         reader.cancel();
                     } catch (e) {
-                        throw new Error("Download test failed");
+                        if (e.name !== 'AbortError') {
+                            throw new Error("Download test failed");
+                        } else {
+                            throw e;
+                        }
                     }
                 } else { // upload
                     const chunkSize = 1 * 1024 * 1024; // 1MB chunks
@@ -250,23 +418,65 @@
                     
                     try {
                         while (performance.now() < endTime) {
-                            await fetch(url, {
+                            if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+                            
+                            await fetch(config.uploadTestUrl, {
                                 method: 'POST',
                                 body: testData,
                                 headers: {
                                     'Content-Type': 'application/octet-stream'
-                                }
+                                },
+                                signal
                             });
                             bytesTransferred += chunkSize;
                         }
                     } catch (e) {
-                        throw new Error("Upload test failed");
+                        if (e.name !== 'AbortError') {
+                            throw new Error("Upload test failed");
+                        } else {
+                            throw e;
+                        }
                     }
                 }
                 
-                const actualDuration = (Math.min(performance.now(), endTime) - startTime) / 1000;
+                const actualDuration = (Math.min(performance.now(), endTime) - startTime;
                 const bitsTransferred = bytesTransferred * 8;
-                return (bitsTransferred / actualDuration) / 1000000; // Convert to Mbps
+                return (bitsTransferred / (actualDuration / 1000)) / 1000000; // Convert to Mbps
+            }
+            
+            function saveTestResult(ping, download, upload) {
+                const testResult = {
+                    date: new Date().toLocaleString(),
+                    ping,
+                    download,
+                    upload
+                };
+                
+                let history = JSON.parse(localStorage.getItem('speedTestHistory') || []);
+                history.unshift(testResult);
+                if (history.length > 10) history = history.slice(0, 10);
+                
+                localStorage.setItem('speedTestHistory', JSON.stringify(history));
+                loadHistory();
+            }
+            
+            function loadHistory() {
+                const history = JSON.parse(localStorage.getItem('speedTestHistory') || []);
+                historyList.innerHTML = '';
+                
+                history.forEach(test => {
+                    const li = document.createElement('li');
+                    li.className = 'history-item';
+                    li.innerHTML = `
+                        <div>
+                            <strong>${test.download.toFixed(1)} Mbps ↓</strong>
+                            <span>${test.upload.toFixed(1)} Mbps ↑</span>
+                            <span>${test.ping} ms</span>
+                        </div>
+                        <span class="test-time">${test.date}</span>
+                    `;
+                    historyList.appendChild(li);
+                });
             }
         });
     </script>
