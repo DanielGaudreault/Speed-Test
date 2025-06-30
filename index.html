@@ -132,7 +132,6 @@
         
         <div class="test-details" id="testDetails">
             This test measures your actual internet speeds by transferring data to/from reliable test servers.
-            Results are averaged over multiple measurements for accuracy.
         </div>
     </div>
 
@@ -148,12 +147,12 @@
             
             // Configuration
             const config = {
-                downloadTestSize: 20 * 1024 * 1024, // 20MB
-                uploadTestSize: 10 * 1024 * 1024,   // 10MB
-                testIterations: 3,                  // Number of test runs to average
+                downloadTestSize: 10 * 1024 * 1024, // 10MB
+                uploadTestSize: 5 * 1024 * 1024,    // 5MB
                 pingTestUrl: 'https://www.google.com',
-                downloadTestUrl: 'https://speedtest-ny.turnkeyinternet.net/1000mb.bin',
-                uploadTestUrl: 'https://httpbin.org/post'
+                downloadTestUrl: 'https://speed.hetzner.de/100MB.bin',
+                uploadTestUrl: 'https://httpbin.org/post',
+                testDuration: 5000 // Test duration in ms (5 seconds)
             };
             
             startTestBtn.addEventListener('click', async function() {
@@ -164,43 +163,27 @@
                 try {
                     // 1. Ping Test
                     statusDisplay.textContent = "Measuring latency...";
-                    const pingResults = [];
-                    for (let i = 0; i < config.testIterations; i++) {
-                        const ping = await measurePing(config.pingTestUrl);
-                        pingResults.push(ping);
-                        updateProgress(10 + (i * 5));
-                    }
-                    const avgPing = calculateAverage(pingResults);
-                    pingDisplay.textContent = Math.round(avgPing);
+                    const ping = await measurePing(config.pingTestUrl);
+                    pingDisplay.textContent = Math.round(ping);
+                    updateProgress(10);
                     
                     // 2. Download Test
                     statusDisplay.textContent = "Testing download speed...";
                     progressBar.style.background = "linear-gradient(90deg, #3498db, #2ecc71)";
-                    const downloadSpeeds = [];
-                    for (let i = 0; i < config.testIterations; i++) {
-                        const speed = await measureDownloadSpeed(config.downloadTestUrl, config.downloadTestSize);
-                        downloadSpeeds.push(speed);
-                        updateProgress(40 + (i * 15));
-                    }
-                    const avgDownload = calculateAverage(downloadSpeeds);
-                    downloadDisplay.textContent = avgDownload.toFixed(2);
+                    const downloadSpeed = await measureSpeed('download', config.downloadTestUrl, config.testDuration);
+                    downloadDisplay.textContent = downloadSpeed.toFixed(2);
+                    updateProgress(60);
                     
                     // 3. Upload Test
                     statusDisplay.textContent = "Testing upload speed...";
                     progressBar.style.background = "linear-gradient(90deg, #2ecc71, #e74c3c)";
-                    const uploadSpeeds = [];
-                    for (let i = 0; i < config.testIterations; i++) {
-                        const speed = await measureUploadSpeed(config.uploadTestUrl, config.uploadTestSize);
-                        uploadSpeeds.push(speed);
-                        updateProgress(70 + (i * 10));
-                    }
-                    const avgUpload = calculateAverage(uploadSpeeds);
-                    uploadDisplay.textContent = avgUpload.toFixed(2);
+                    const uploadSpeed = await measureSpeed('upload', config.uploadTestUrl, config.testDuration);
+                    uploadDisplay.textContent = uploadSpeed.toFixed(2);
+                    updateProgress(100);
                     
                     // Complete
                     statusDisplay.textContent = "Test completed successfully!";
-                    updateProgress(100);
-                    testDetails.textContent = `Final results averaged over ${config.testIterations} test runs. Ping: ${Math.round(avgPing)}ms, Download: ${avgDownload.toFixed(2)} Mbps, Upload: ${avgUpload.toFixed(2)} Mbps`;
+                    testDetails.textContent = `Results: Ping ${Math.round(ping)}ms | Download ${downloadSpeed.toFixed(2)} Mbps | Upload ${uploadSpeed.toFixed(2)} Mbps`;
                     
                 } catch (error) {
                     console.error("Speed test error:", error);
@@ -223,103 +206,69 @@
                 progressBar.style.width = percent + "%";
             }
             
-            function calculateAverage(values) {
-                const sum = values.reduce((a, b) => a + b, 0);
-                return sum / values.length;
-            }
-            
             async function measurePing(url) {
-                const startTimes = [];
-                const count = 3; // Multiple ping measurements
-                
-                for (let i = 0; i < count; i++) {
-                    const start = performance.now();
-                    try {
-                        await fetch(url, {
-                            method: 'HEAD',
-                            mode: 'no-cors',
-                            cache: 'no-store'
-                        });
-                    } catch (e) {
-                        // We still get timing even if request fails
-                    }
-                    const end = performance.now();
-                    startTimes.push(end - start);
-                }
-                
-                // Return median ping to exclude outliers
-                startTimes.sort((a, b) => a - b);
-                return startTimes[Math.floor(count / 2)];
-            }
-            
-            async function measureDownloadSpeed(url, size) {
-                const startTime = performance.now();
-                let downloadedBytes = 0;
-                
+                const start = performance.now();
                 try {
-                    const response = await fetch(url, {
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache'
-                        }
+                    await fetch(url, {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        cache: 'no-store'
                     });
-                    
-                    const reader = response.body.getReader();
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        downloadedBytes += value.length;
-                        
-                        // Abort if we've downloaded enough for measurement
-                        if (downloadedBytes >= size) {
-                            reader.cancel();
-                            break;
-                        }
-                    }
                 } catch (e) {
-                    throw new Error("Download test failed");
+                    // We still get timing even if request fails
                 }
-                
-                const endTime = performance.now();
-                const durationSeconds = (endTime - startTime) / 1000;
-                const bitsDownloaded = downloadedBytes * 8;
-                return (bitsDownloaded / durationSeconds) / 1000000; // Convert to Mbps
+                const end = performance.now();
+                return end - start;
             }
             
-            async function measureUploadSpeed(url, size) {
-                const chunkSize = 1 * 1024 * 1024; // 1MB chunks
-                const chunks = Math.ceil(size / chunkSize);
-                const testData = new Uint8Array(chunkSize).fill(0);
-                
+            async function measureSpeed(type, url, duration) {
                 const startTime = performance.now();
-                let uploadedBytes = 0;
+                let transferredBytes = 0;
+                let testEndTime = startTime + duration;
                 
-                try {
-                    for (let i = 0; i < chunks; i++) {
-                        const currentSize = Math.min(chunkSize, size - uploadedBytes);
-                        const blob = new Blob([testData.subarray(0, currentSize)]);
-                        
-                        await fetch(url, {
-                            method: 'POST',
-                            body: blob,
+                if (type === 'download') {
+                    try {
+                        const response = await fetch(url, {
                             headers: {
-                                'Content-Type': 'application/octet-stream'
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
                             }
                         });
                         
-                        uploadedBytes += currentSize;
-                        
-                        // Abort if we've uploaded enough for measurement
-                        if (uploadedBytes >= size) break;
+                        const reader = response.body.getReader();
+                        while (performance.now() < testEndTime) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            transferredBytes += value.length;
+                        }
+                        reader.cancel();
+                    } catch (e) {
+                        throw new Error("Download test failed");
                     }
-                } catch (e) {
-                    throw new Error("Upload test failed");
+                } else { // upload
+                    try {
+                        const chunkSize = 1 * 1024 * 1024; // 1MB chunks
+                        const testData = new Uint8Array(chunkSize).fill(0);
+                        
+                        while (performance.now() < testEndTime) {
+                            await fetch(url, {
+                                method: 'POST',
+                                body: testData,
+                                headers: {
+                                    'Content-Type': 'application/octet-stream'
+                                }
+                            });
+                            transferredBytes += chunkSize;
+                        }
+                    } catch (e) {
+                        throw new Error("Upload test failed");
+                    }
                 }
                 
-                const endTime = performance.now();
+                const endTime = Math.min(performance.now(), testEndTime);
                 const durationSeconds = (endTime - startTime) / 1000;
-                const bitsUploaded = uploadedBytes * 8;
-                return (bitsUploaded / durationSeconds) / 1000000; // Convert to Mbps
+                const bitsTransferred = transferredBytes * 8;
+                return (bitsTransferred / durationSeconds) / 1000000; // Convert to Mbps
             }
         });
     </script>
