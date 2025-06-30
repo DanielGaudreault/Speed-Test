@@ -3,135 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Precision Speed Test</title>
+    <title>Accurate Speed Test</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
+            font-family: Arial, sans-serif;
+            max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background: #f8f9fa;
+            text-align: center;
+            background: #f5f5f5;
         }
-        .container {
+        .test-container {
             background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
+            color: #333;
+            margin-bottom: 20px;
         }
-        .test-btn {
-            background: #3498db;
+        button {
+            background: #4285f4;
             color: white;
             border: none;
             padding: 12px 24px;
-            font-size: 18px;
-            border-radius: 8px;
+            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
-            display: block;
-            margin: 0 auto;
-            transition: all 0.3s;
+            margin: 15px 0;
+            transition: background 0.3s;
         }
-        .test-btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
+        button:hover {
+            background: #3367d6;
         }
-        .test-btn:disabled {
-            background: #95a5a6;
+        button:disabled {
+            background: #9e9e9e;
             cursor: not-allowed;
-            transform: none;
         }
         .results {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 30px 0;
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0;
         }
-        .result-card {
-            background: #f1f5f9;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            width: 30%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .result-value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
-            color: #2c3e50;
-            margin: 10px 0;
+            color: #202124;
+            margin: 5px 0;
         }
         .result-label {
-            color: #7f8c8d;
-            font-size: 16px;
+            color: #5f6368;
+            font-size: 14px;
         }
         .progress-container {
-            height: 8px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            margin: 30px 0;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin: 20px 0;
             overflow: hidden;
         }
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
+            background: #4285f4;
             width: 0%;
-            transition: width 0.5s ease;
+            transition: width 0.3s;
         }
         .status {
-            text-align: center;
-            color: #7f8c8d;
-            margin: 20px 0;
-            min-height: 24px;
+            color: #5f6368;
+            margin: 15px 0;
+            min-height: 20px;
         }
-        .test-details {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #34495e;
-        }
-        @media (max-width: 600px) {
+        @media (max-width: 500px) {
             .results {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+                align-items: center;
+            }
+            .result-box {
+                width: 80%;
+                margin-bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Precision Internet Speed Test</h1>
+    <div class="test-container">
+        <h1>Internet Speed Test</h1>
+        <button id="startTest">Start Test</button>
         
-        <button id="startTest" class="test-btn">Start Speed Test</button>
-        
-        <div class="status" id="status">Ready to test your connection</div>
+        <div class="status" id="status">Ready to begin test</div>
         
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
         
         <div class="results">
-            <div class="result-card">
-                <div class="result-label">Ping (Latency)</div>
+            <div class="result-box">
+                <div class="result-label">Ping</div>
                 <div class="result-value" id="ping">—</div>
-                <div class="result-label">milliseconds</div>
+                <div class="result-label">ms</div>
             </div>
-            <div class="result-card">
-                <div class="result-label">Download Speed</div>
+            <div class="result-box">
+                <div class="result-label">Download</div>
                 <div class="result-value" id="download">—</div>
                 <div class="result-label">Mbps</div>
             </div>
-            <div class="result-card">
-                <div class="result-label">Upload Speed</div>
+            <div class="result-box">
+                <div class="result-label">Upload</div>
                 <div class="result-value" id="upload">—</div>
                 <div class="result-label">Mbps</div>
             </div>
-        </div>
-        
-        <div class="test-details" id="testDetails">
-            This test measures your actual internet speeds by transferring data to/from reliable test servers.
         </div>
     </div>
 
@@ -143,63 +131,62 @@
             const uploadDisplay = document.getElementById('upload');
             const progressBar = document.getElementById('progressBar');
             const statusDisplay = document.getElementById('status');
-            const testDetails = document.getElementById('testDetails');
             
             // Configuration
             const config = {
-                downloadTestSize: 10 * 1024 * 1024, // 10MB
-                uploadTestSize: 5 * 1024 * 1024,    // 5MB
-                pingTestUrl: 'https://www.google.com',
-                downloadTestUrl: 'https://speed.hetzner.de/100MB.bin',
-                uploadTestUrl: 'https://httpbin.org/post',
-                testDuration: 5000 // Test duration in ms (5 seconds)
+                testDuration: 4000, // 4 seconds per test
+                pingTestUrl: 'https://www.google.com/generate_204',
+                downloadTestUrl: 'https://speedtest.ftp.otenet.gr/files/test100Mb.db',
+                uploadTestUrl: 'https://httpbin.org/post'
             };
             
             startTestBtn.addEventListener('click', async function() {
                 startTestBtn.disabled = true;
-                resetDisplays();
-                statusDisplay.textContent = "Initializing test...";
+                resetUI();
                 
                 try {
                     // 1. Ping Test
-                    statusDisplay.textContent = "Measuring latency...";
+                    statusDisplay.textContent = "Measuring ping...";
                     const ping = await measurePing(config.pingTestUrl);
-                    pingDisplay.textContent = Math.round(ping);
-                    updateProgress(10);
+                    pingDisplay.textContent = ping;
+                    updateProgress(15);
                     
                     // 2. Download Test
                     statusDisplay.textContent = "Testing download speed...";
-                    progressBar.style.background = "linear-gradient(90deg, #3498db, #2ecc71)";
-                    const downloadSpeed = await measureSpeed('download', config.downloadTestUrl, config.testDuration);
-                    downloadDisplay.textContent = downloadSpeed.toFixed(2);
+                    const downloadSpeed = await measureTransferSpeed(
+                        'download', 
+                        config.downloadTestUrl, 
+                        config.testDuration
+                    );
+                    downloadDisplay.textContent = downloadSpeed.toFixed(1);
                     updateProgress(60);
                     
                     // 3. Upload Test
                     statusDisplay.textContent = "Testing upload speed...";
-                    progressBar.style.background = "linear-gradient(90deg, #2ecc71, #e74c3c)";
-                    const uploadSpeed = await measureSpeed('upload', config.uploadTestUrl, config.testDuration);
-                    uploadDisplay.textContent = uploadSpeed.toFixed(2);
+                    const uploadSpeed = await measureTransferSpeed(
+                        'upload', 
+                        config.uploadTestUrl, 
+                        config.testDuration
+                    );
+                    uploadDisplay.textContent = uploadSpeed.toFixed(1);
                     updateProgress(100);
                     
-                    // Complete
                     statusDisplay.textContent = "Test completed successfully!";
-                    testDetails.textContent = `Results: Ping ${Math.round(ping)}ms | Download ${downloadSpeed.toFixed(2)} Mbps | Upload ${uploadSpeed.toFixed(2)} Mbps`;
                     
                 } catch (error) {
-                    console.error("Speed test error:", error);
-                    statusDisplay.textContent = "Test failed: " + error.message;
-                    progressBar.style.width = "0%";
+                    console.error("Test failed:", error);
+                    statusDisplay.textContent = "Test failed. Please try again.";
                 } finally {
                     startTestBtn.disabled = false;
                 }
             });
             
-            function resetDisplays() {
+            function resetUI() {
                 pingDisplay.textContent = "—";
                 downloadDisplay.textContent = "—";
                 uploadDisplay.textContent = "—";
                 progressBar.style.width = "0%";
-                testDetails.textContent = "Running tests...";
+                statusDisplay.textContent = "Starting test...";
             }
             
             function updateProgress(percent) {
@@ -207,50 +194,62 @@
             }
             
             async function measurePing(url) {
-                const start = performance.now();
-                try {
-                    await fetch(url, {
-                        method: 'HEAD',
-                        mode: 'no-cors',
-                        cache: 'no-store'
-                    });
-                } catch (e) {
-                    // We still get timing even if request fails
+                const times = [];
+                
+                // Take 3 measurements and use the median
+                for (let i = 0; i < 3; i++) {
+                    try {
+                        const start = performance.now();
+                        await fetch(url, {
+                            method: 'GET',
+                            cache: 'no-store',
+                            mode: 'no-cors'
+                        });
+                        const end = performance.now();
+                        times.push(Math.round(end - start));
+                    } catch (e) {
+                        times.push(999); // Fallback high value if ping fails
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 200));
                 }
-                const end = performance.now();
-                return end - start;
+                
+                // Return median value
+                times.sort((a, b) => a - b);
+                return times[1];
             }
             
-            async function measureSpeed(type, url, duration) {
+            async function measureTransferSpeed(type, url, duration) {
                 const startTime = performance.now();
-                let transferredBytes = 0;
-                let testEndTime = startTime + duration;
+                let endTime = startTime + duration;
+                let bytesTransferred = 0;
                 
                 if (type === 'download') {
                     try {
                         const response = await fetch(url, {
+                            cache: 'no-store',
                             headers: {
                                 'Cache-Control': 'no-cache',
                                 'Pragma': 'no-cache'
                             }
                         });
-                        
                         const reader = response.body.getReader();
-                        while (performance.now() < testEndTime) {
+                        
+                        while (performance.now() < endTime) {
                             const { done, value } = await reader.read();
                             if (done) break;
-                            transferredBytes += value.length;
+                            bytesTransferred += value.length;
                         }
+                        
                         reader.cancel();
                     } catch (e) {
                         throw new Error("Download test failed");
                     }
                 } else { // upload
+                    const chunkSize = 1 * 1024 * 1024; // 1MB chunks
+                    const testData = new Uint8Array(chunkSize);
+                    
                     try {
-                        const chunkSize = 1 * 1024 * 1024; // 1MB chunks
-                        const testData = new Uint8Array(chunkSize).fill(0);
-                        
-                        while (performance.now() < testEndTime) {
+                        while (performance.now() < endTime) {
                             await fetch(url, {
                                 method: 'POST',
                                 body: testData,
@@ -258,17 +257,16 @@
                                     'Content-Type': 'application/octet-stream'
                                 }
                             });
-                            transferredBytes += chunkSize;
+                            bytesTransferred += chunkSize;
                         }
                     } catch (e) {
                         throw new Error("Upload test failed");
                     }
                 }
                 
-                const endTime = Math.min(performance.now(), testEndTime);
-                const durationSeconds = (endTime - startTime) / 1000;
-                const bitsTransferred = transferredBytes * 8;
-                return (bitsTransferred / durationSeconds) / 1000000; // Convert to Mbps
+                const actualDuration = (Math.min(performance.now(), endTime) - startTime) / 1000;
+                const bitsTransferred = bytesTransferred * 8;
+                return (bitsTransferred / actualDuration) / 1000000; // Convert to Mbps
             }
         });
     </script>
