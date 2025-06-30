@@ -4,45 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internet Speed Test</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-container {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:disabled {
+            background: #cccccc;
+        }
+        .results {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .result-box {
+            background: white;
+            border-radius: 5px;
+            padding: 15px;
+            width: 30%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .progress-container {
+            width: 100%;
+            background: #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Internet Speed Test</h1>
-        <div class="speed-test">
-            <div class="test-button">
-                <button id="startTest">Start Test</button>
+    <h1>Internet Speed Test</h1>
+    <div class="test-container">
+        <button id="startTest">Start Speed Test</button>
+        
+        <div class="results">
+            <div class="result-box">
+                <h3>Ping</h3>
+                <div id="ping">—</div>
+                <small>ms</small>
             </div>
-            
-            <div class="results">
-                <div class="result-box">
-                    <h3>Ping</h3>
-                    <div id="ping" class="value">—</div>
-                    <span class="unit">ms</span>
-                </div>
-                <div class="result-box">
-                    <h3>Download</h3>
-                    <div id="download" class="value">—</div>
-                    <span class="unit">Mbps</span>
-                </div>
-                <div class="result-box">
-                    <h3>Upload</h3>
-                    <div id="upload" class="value">—</div>
-                    <span class="unit">Mbps</span>
-                </div>
+            <div class="result-box">
+                <h3>Download</h3>
+                <div id="download">—</div>
+                <small>Mbps</small>
             </div>
-            
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-            
-            <div class="history" id="history">
-                <h3>Previous Tests</h3>
-                <ul id="historyList"></ul>
+            <div class="result-box">
+                <h3>Upload</h3>
+                <div id="upload">—</div>
+                <small>Mbps</small>
             </div>
         </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div id="status">Ready to test</div>
     </div>
-    
-    <script src="script.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startTestBtn = document.getElementById('startTest');
+            const pingDisplay = document.getElementById('ping');
+            const downloadDisplay = document.getElementById('download');
+            const uploadDisplay = document.getElementById('upload');
+            const progressBar = document.getElementById('progressBar');
+            const statusDisplay = document.getElementById('status');
+            
+            // Improved speed test implementation
+            startTestBtn.addEventListener('click', async function() {
+                startTestBtn.disabled = true;
+                statusDisplay.textContent = "Starting test...";
+                
+                try {
+                    // Reset displays
+                    pingDisplay.textContent = "—";
+                    downloadDisplay.textContent = "—";
+                    uploadDisplay.textContent = "—";
+                    progressBar.style.width = "0%";
+                    
+                    // 1. Ping Test
+                    statusDisplay.textContent = "Measuring ping...";
+                    const ping = await measurePing();
+                    pingDisplay.textContent = ping;
+                    
+                    // 2. Download Test
+                    statusDisplay.textContent = "Measuring download speed...";
+                    progressBar.style.backgroundColor = "#4CAF50";
+                    const downloadSpeed = await measureDownloadSpeed();
+                    downloadDisplay.textContent = downloadSpeed.toFixed(2);
+                    progressBar.style.width = "50%";
+                    
+                    // 3. Upload Test
+                    statusDisplay.textContent = "Measuring upload speed...";
+                    progressBar.style.backgroundColor = "#2196F3";
+                    const uploadSpeed = await measureUploadSpeed();
+                    uploadDisplay.textContent = uploadSpeed.toFixed(2);
+                    progressBar.style.width = "100%";
+                    
+                    statusDisplay.textContent = "Test completed!";
+                } catch (error) {
+                    console.error("Speed test failed:", error);
+                    statusDisplay.textContent = "Test failed. Please try again.";
+                } finally {
+                    startTestBtn.disabled = false;
+                }
+            });
+            
+            async function measurePing() {
+                const start = performance.now();
+                try {
+                    await fetch('https://www.google.com', {
+                        method: 'HEAD',
+                        cache: 'no-store',
+                        mode: 'no-cors'
+                    });
+                } catch (e) {
+                    // We still get timing even if request fails
+                }
+                const end = performance.now();
+                return Math.round(end - start);
+            }
+            
+            async function measureDownloadSpeed() {
+                const testUrl = 'https://httpbin.org/bytes/10000000'; // 10MB test file
+                const startTime = performance.now();
+                
+                try {
+                    const response = await fetch(testUrl, {
+                        cache: 'no-store',
+                        headers: {
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    await response.arrayBuffer();
+                } catch (e) {
+                    throw new Error("Download test failed");
+                }
+                
+                const endTime = performance.now();
+                const duration = (endTime - startTime) / 1000; // in seconds
+                const bitsLoaded = 10000000 * 8; // 10MB in bits
+                return (bitsLoaded / duration) / 1000000; // Mbps
+            }
+            
+            async function measureUploadSpeed() {
+                const testUrl = 'https://httpbin.org/post';
+                const testData = new Blob([new Uint8Array(5000000)]); // 5MB test data
+                const startTime = performance.now();
+                
+                try {
+                    await fetch(testUrl, {
+                        method: 'POST',
+                        body: testData,
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/octet-stream'
+                        }
+                    });
+                } catch (e) {
+                    throw new Error("Upload test failed");
+                }
+                
+                const endTime = performance.now();
+                const duration = (endTime - startTime) / 1000; // in seconds
+                const bitsSent = 5000000 * 8; // 5MB in bits
+                return (bitsSent / duration) / 1000000; // Mbps
+            }
+        });
+    </script>
 </body>
 </html>
