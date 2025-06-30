@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Speed Test</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Internet Speed Test</h1>
+        <div class="speed-test">
+            <div class="test-button">
+                <button id="startTest">Start Test</button>
+            </div>
+            
+            <div class="results">
+                <div class="result-box">
+                    <h3>Ping</h3>
+                    <div id="ping" class="value">—</div>
+                    <span class="unit">ms</span>
+                </div>
+                <div class="result-box">
+                    <h3>Download</h3>
+                    <div id="download" class="value">—</div>
+                    <span class="unit">Mbps</span>
+                </div>
+                <div class="result-box">
+                    <h3>Upload</h3>
+                    <div id="upload" class="value">—</div>
+                    <span class="unit">Mbps</span>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="history" id="history">
+                <h3>Previous Tests</h3>
+                <ul id="historyList"></ul>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
